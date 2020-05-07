@@ -1,0 +1,1 @@
+const firstC= {name: 'Vova'};
