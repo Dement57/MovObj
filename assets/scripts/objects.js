@@ -1,26 +1,48 @@
 const addMovieBtn = document.getElementById("add-movie-btn");
-const searchMobieBtn = document.getElementById("search-btn");
-const movieList = document.getElementById('movie-list');
+const searchMovieBtn = document.getElementById("search-btn");
+const movieList = document.getElementById("movie-list");
 const movies = [];
 
 const toggleMovieItem = () => {
-    movieList.style = 'visible';
-}
+  movieList.style = "visible";
+};
 
-const renderMovies = () => {
-    if (movies.length === 0) {
-        movieList.classList.remove('visible');
-    } else {
-        movieList.classList.add('visible');
+const renderMovies = (filter = "") => {
+  if (movies.length === 0) {
+    movieList.classList.remove("visible");
+    return;
+  } else {
+    movieList.classList.add("visible");
+  }
+  movieList.innerHTML = "";
+
+console.log('Before Filter', movies)
+
+const filteredMovies = !filter
+? movies
+: movies.filter(movie => movie.info.title.includes(filter));
+
+  filteredMovies.forEach((movie) => {
+    const movieEl = document.createElement("li");
+    if ('info' in movie){
+
     }
-movieList.innerHTML = '';
 
-movies.forEach((movie) => {
-    const movieEl = document.createElement('li');
-    movieEl.textContent = movie.info.title;
+    const { info, ...otherProps } = movie; 
+    console.log(otherProps)
+    let { getFormattedTitle } = movie;
+    // getFormattedTitle = getFormattedTitle.bind(movie)
+    let text = getFormattedTitle.apply(movie) + " - ";
+    for (const key in info) {
+      if (key !== "title" && key !== '_title') {
+        text = text + `${key}: ${info[key]}`;
+      }
+    }
+
+    movieEl.textContent = text;
     movieList.append(movieEl);
-})
-}
+  });
+};
 
 const addMovieHandler = () => {
   const title = document.getElementById("title").value;
@@ -28,7 +50,6 @@ const addMovieHandler = () => {
   const extraValue = document.getElementById("extra-value").value;
 
   if (
-    title.trim() === "" ||
     extraName.trim() === "" ||
     extraValue.trim() === ""
   ) {
@@ -37,20 +58,43 @@ const addMovieHandler = () => {
 
   const newMovie = {
     info: {
-      title,
+      set title (value) {
+        if (value.trim() === ''){
+          this._title = 'DEFAULT';
+          return;
+        }
+        this._title = value;
+      },
+      get title() {
+        return this._title;
+      },
       [extraName]: extraValue,
     },
-    id: Math.random()
+    id: Math.random().toString(),
+    getFormattedTitle() {
+      console.log(this);
+      return this.info.title.toUpperCase();
+    }
   };
+
+newMovie.info.title = title;
+console.log(newMovie.info.title)
 
   movies.push(newMovie);
   console.log(newMovie);
-  toggleMovieItem()
-  renderMovies()
+  toggleMovieItem();
+  renderMovies();
 };
 
+const New = () => {
+  console.log("click");
+};
 
+const searchMovieHandler = function () {
+  console.log(this);
+  const searchInput = document.getElementById("filter-title").value;
+  renderMovies(searchInput);
+};
 
-const New = () => {console.log('click')};
-
-addMovieBtn.addEventListener('click', addMovieHandler);
+addMovieBtn.addEventListener("click", addMovieHandler);
+searchMovieBtn.addEventListener("click", searchMovieHandler);
